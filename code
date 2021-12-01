@@ -1,39 +1,58 @@
-//CODICE PROGETTO
-<intent-filter>
-    <action android:name="android.intent.action.SEND" />
-    <action android:name="android.intent.action.SENDTO" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="sms" />
-    <data android:scheme="smsto" />
-    <data android:scheme="mms" />
-    <data android:scheme="mmsto" />
-</intent-filter>
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-
-//CODICE PROGETTO
-
-//codice per sms manager
-final String mansms = getPackageName();
-if (!Telephony.Sms.getDefaultSmsPackage(this).equals(mansms)) {
-    Intent mansmsintent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
-    mansmsintent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, mansms);
-    startActivity(mansmsintent);
-}
-
-//codice per sms manager superiore alla 5
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED){
-    requestPermissions(new String[]{Manifest.permission.SEND_SMS},PERMISSIONS_REQUEST_SEND_SMS);
-}
-
-//codice per permessi dinamici
-public void onRequestPermissionsResult(int requestCode, String[] permissions,int[] grantResults) {
-    if (requestCode == PERMISSIONS_REQUEST_SEND_SMS) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // Permission is granted
-            // invio sms
-        } else {
-            Toast.makeText(this, "Until you grant the permission, we cannot display the names", Toast.LENGTH_SHORT).show();
+        // Register the app as SMS Manager
+        final String myPackageName = getPackageName();
+        if (!Telephony.Sms.getDefaultSmsPackage(this).equals(myPackageName)) {
+            Intent intent =
+                    new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, myPackageName);
+            startActivity(intent);
         }
-    }
-}
+
+        // Check permission to send sms
+        checkPermission();
+
+
+
+
+
+
+
+
+
+     // Function to check and request permission.
+     public void checkPermission()
+     {
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+             requestPermissions(new String[]{Manifest.permission.SEND_SMS}, PERMISSIONS_REQUEST_SEND_SMS);
+         }
+ /**
+         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS)) {
+             // the request has been denied previously, show explanation why you need this, then request permission again
+         } else {
+             // ask without explanationsToast.makeText(MainActivity.this, "Permission already granted", Toast.LENGTH_SHORT).show();
+         }*/
+     }
+
+     // This function is called when the user accepts or decline the permission.
+     // Request Code is used to check which permission called this function.
+     // This request code is provided when the user is prompt for permission.
+
+     @Override
+     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+         super.onRequestPermissionsResult(requestCode,
+                 permissions,
+                 grantResults);
+
+         if (requestCode == PERMISSIONS_REQUEST_SEND_SMS) {
+             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                 Toast.makeText(MainActivity.this, "Send SMS Permission Granted", Toast.LENGTH_SHORT) .show();
+             }
+             else {
+                 Toast.makeText(MainActivity.this, "Send SMS Permission Denied", Toast.LENGTH_SHORT) .show();
+             }
+         }
+     }
